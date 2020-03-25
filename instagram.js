@@ -6,7 +6,7 @@ const mobile = devices['iPhone XR'];
 const path = require('path');
 
 async function post (description, imgPath, cb) {
-  const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
+  const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage', '--single-process']});
   const page = await browser.newPage();
   await page.emulate(mobile);
   try {
