@@ -6,7 +6,7 @@ const mobile = devices['iPhone XR'];
 const path = require('path');
 
 async function post (description, imgPath, cb) {
-  const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage', '--single-process']});
+  const browser = await puppeteer.launch({headless: true, args: ['--single-process', '--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']});
   const page = await browser.newPage();
   await page.emulate(mobile);
   try {
@@ -30,13 +30,17 @@ async function post (description, imgPath, cb) {
       
 
       console.log('passed login')
+      await page.screenshot({path: 'after login.png'});
 
       await page.$(".coreSpriteKeyhole")
       await page.click('main > div > div > div > button');
       await page.waitForNavigation();
-      await page.waitFor('div[role="dialog"]', { visible: true });
-      await page.click('div[role="dialog"] > div > div:last-child > button:last-child');
-  
+      await page.screenshot({path: 'after notification.png'});
+
+      //await page.waitFor('div[role="dialog"]', { visible: true });
+      //await page.click('div[role="dialog"] > div > div:last-child > button:last-child');
+      await page.screenshot({path: 'after popup.png'});
+
       await delay(500);
 
       const [fileChooser] = await Promise.all([
@@ -48,8 +52,9 @@ async function post (description, imgPath, cb) {
       await page.waitFor(500);
       console.log("navigated to home page");
       await fileChooser.accept([imgPath]); 
-
       await page.waitForNavigation();
+      await page.screenshot({path: 'sended image.png'});
+
       console.log('sended picture');
       
       //first step
@@ -59,6 +64,7 @@ async function post (description, imgPath, cb) {
       await page.waitForNavigation();
 
       console.log('sended picture');
+      await page.screenshot({path: 'sended picture.png'});
 
       //second step (last one!)
       await page.waitFor('textarea', { visible: true });
