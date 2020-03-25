@@ -17,7 +17,7 @@ app.post('/', urlencodedParser, (req, res) => {
 	let tmpImgPath = "./tmp/" + Date.now() + "_image.png";
 	fs.writeFile(tmpImgPath, req.body.image, 'base64', function(err) {
 		Instagram.post(req.body.description, tmpImgPath, function (err) {
-			res.end();
+			res.send(err);
 		});
 	});
 });

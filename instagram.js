@@ -29,7 +29,7 @@ async function post (description, imgPath, cb) {
       await page.waitForNavigation();
       
 
-      console.log('passed condition')
+      console.log('passed login')
 
       await page.$(".coreSpriteKeyhole")
       await page.click('main > div > div > div > button');
@@ -46,24 +46,32 @@ async function post (description, imgPath, cb) {
 
 
       await page.waitFor(500);
-      console.log("navigated to creation")
+      console.log("navigated to home page");
       await fileChooser.accept([imgPath]); 
 
       await page.waitForNavigation();
-
+      console.log('sended picture');
+      
       //first step
+
       await page.waitFor('header > div > div:last-child > button', { visible: true });
       await page.click("header > div > div:last-child > button")
       await page.waitForNavigation();
 
+      console.log('sended picture');
 
       //second step (last one!)
       await page.waitFor('textarea', { visible: true });
       await page.type('textarea', description, { delay: 27 });
 
       await page.waitFor('header > div > div:last-child > button', { visible: true });
+
+      console.log('filled data');
+
       await page.click("header > div > div:last-child > button")
       await page.waitForNavigation();
+
+      console.log('posted image');
 
       await page.waitFor('div[role="dialog"]', { visible: true });
       await page.click('div[role="dialog"] > div > div:last-child > button:last-child');
