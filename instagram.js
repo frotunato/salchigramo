@@ -18,10 +18,10 @@ async function post (description, imgPath, cb) {
 
       await page.waitFor('input[name=username]', { visible: true });
       
-      await delay(120);
+      await delay(520);
       await page.type('input[name=password]', user.password, { delay: 32 });
 
-      await delay(200);
+      await delay(500);
       await page.type('input[name=username]', user.username, { delay: 47 });
 
 
@@ -37,7 +37,7 @@ async function post (description, imgPath, cb) {
       await page.waitFor('div[role="dialog"]', { visible: true });
       await page.click('div[role="dialog"] > div > div:last-child > button:last-child');
   
-      await delay(100);
+      await delay(500);
 
       const [fileChooser] = await Promise.all([
           page.waitForFileChooser(),
@@ -45,7 +45,7 @@ async function post (description, imgPath, cb) {
       ]);
 
 
-      await page.waitFor(100);
+      await page.waitFor(500);
       console.log("navigated to creation")
       await fileChooser.accept([imgPath]); 
 
