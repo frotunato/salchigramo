@@ -18,10 +18,10 @@ async function post (description, imgPath, cb) {
 
       await page.waitFor('input[name=username]', { visible: true });
       
-      await delay(520);
+      await delay(120);
       await page.type('input[name=password]', user.password, { delay: 32 });
 
-      await delay(500);
+      await delay(100);
       await page.type('input[name=username]', user.username, { delay: 47 });
 
 
@@ -30,18 +30,18 @@ async function post (description, imgPath, cb) {
       
 
       console.log('passed login')
-      await page.screenshot({path: 'after login.png'});
+      ////await page.screenshot({path: 'after login.png'});
 
       await page.$(".coreSpriteKeyhole")
       await page.click('main > div > div > div > button');
       await page.waitForNavigation();
-      await page.screenshot({path: 'after notification.png'});
+      ////await page.screenshot({path: 'after notification.png'});
 
       //await page.waitFor('div[role="dialog"]', { visible: true });
       //await page.click('div[role="dialog"] > div > div:last-child > button:last-child');
-      await page.screenshot({path: 'after popup.png'});
+      ////await page.screenshot({path: 'after popup.png'});
 
-      await delay(500);
+      await delay(100);
 
       const [fileChooser] = await Promise.all([
           page.waitForFileChooser(),
@@ -49,11 +49,11 @@ async function post (description, imgPath, cb) {
       ]);
 
 
-      await page.waitFor(500);
+      await page.waitFor(100);
       console.log("navigated to home page");
       await fileChooser.accept([imgPath]); 
       await page.waitForNavigation();
-      await page.screenshot({path: 'sended image.png'});
+      ////await page.screenshot({path: 'sended image.png'});
 
       console.log('sended picture');
       
@@ -64,7 +64,7 @@ async function post (description, imgPath, cb) {
       await page.waitForNavigation();
 
       console.log('sended picture');
-      await page.screenshot({path: 'sended picture.png'});
+      ////await page.screenshot({path: 'sended picture.png'});
 
       //second step (last one!)
       await page.waitFor('textarea', { visible: true });
