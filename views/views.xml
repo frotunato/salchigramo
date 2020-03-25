@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+
+    <record model="ir.ui.view" id="salchigramo.list">
+      <field name="name">salchigramo list</field>
+      <field name="model">salchigramo.salchigramo</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="published"/>
+          <field name="platform"/>
+        </tree>
+      </field>
+    </record>
+
+
+    <!-- actions opening views on models -->
+
+    <record model="ir.actions.act_window" id="salchigramo.action_window">
+      <field name="name">salchigramo window</field>
+      <field name="res_model">salchigramo.salchigramo</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+
+    <!-- server action to the one above -->
+
+    <record model="ir.actions.server" id="salchigramo.action_server">
+      <field name="name">salchigramo server</field>
+      <field name="model_id" ref="model_salchigramo_salchigramo"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+
+
+    <!-- Top menu item -->
+
+    <menuitem name="salchigramo" id="salchigramo.menu_root"/>
+
+    <!-- menu categories -->
+
+    <menuitem name="Menu 1" id="salchigramo.menu_1" parent="salchigramo.menu_root"/>
+    <menuitem name="Menu 2" id="salchigramo.menu_2" parent="salchigramo.menu_root"/>
+
+    <!-- actions -->
+
+    <menuitem name="List" id="salchigramo.menu_1_list" parent="salchigramo.menu_1"
+              action="salchigramo.action_window"/>
+    <menuitem name="Server to list" id="salchigramo" parent="salchigramo.menu_2"
+              action="salchigramo.action_server"/>
+
+  </data>
+</odoo>
