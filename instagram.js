@@ -76,11 +76,19 @@ async function post (description, imgPath, cb) {
 
       await page.click("header > div > div:last-child > button")
       await page.waitForNavigation();
+      console.log('waiting for main')
+      await page.waitFor('main[role="main"]')
+      console.log('main appeared')
 
-      console.log('posted image');
+      const postId = await elementHandle.$eval("article:nth-child(1) > div:nth-child(3) > div > a", el => el.href);
 
-      await page.waitFor('div[role="dialog"]', { visible: true });
-      await page.click('div[role="dialog"] > div > div:last-child > button:last-child');
+      //document.getElementsByTagName("time")[0].parentElement.href
+      //const text = await page.evaluate(element => element.href, element);
+
+      console.log('posted image', postId);
+
+      //await page.waitFor('div[role="dialog"]', { visible: true });
+      //await page.click('div[role="dialog"] > div > div:last-child > button:last-child');
       
 
       await browser.close();
