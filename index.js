@@ -22,11 +22,18 @@ app.get('/', q.run(async (req, res) => {
 app.post('/', urlencodedParser, q.run(async (req, res) => {
 	let tmpImgPath = "./tmp/" + Date.now() + "_image.png";
 	fs.writeFile(tmpImgPath, req.body.image, 'base64', function(err) {
+		var bf = new Buffer(req.body.image, 'base64');
 		Instagram.post(req.body.description, tmpImgPath, function (postUrl, postId, err) {
-			if (err)
-				res.status(400).json({status: 'error', message: err.message});
-			else
-				res.json({status: 'success', id: postId, url: postUrl});
+		//Instagram.post(req.body.description, bf, function (postUrl, postId, err) {
+			if (err) {
+				fs.unlink(tmpImgPath, function () {
+					res.status(400).json({status: 'error', message: err.message});
+				})
+			} else {
+				fs.unlink(tmpImgPath, function () {
+					res.json({status: 'success', id: postId, url: postUrl});
+				})
+			}
 		});
 	});
 }));
