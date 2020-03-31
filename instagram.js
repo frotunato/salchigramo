@@ -18,7 +18,7 @@ async function post (description, imgPath, cb) {
       
       await Promise.all([
         page.waitForSelector('input[name=username]', { visible: true }),
-        page.waitForSelector('button[type="button"]'),
+        page.waitForSelector('button[type="button"]', { visible: true }),
         page.click('button[type="button"]'),
       ])
 
@@ -161,7 +161,7 @@ async function destroy (postUrl, cb) {
 
       await Promise.all([
         page.waitForSelector('input[name=username]', { visible: true }),
-        page.waitForSelector('button[type="button"]'),
+        page.waitForSelector('button[type="button"]', { visible: true }),
         page.click('button[type="button"]'),
       ])
       //await page.waitFor('button[type="button"]');
