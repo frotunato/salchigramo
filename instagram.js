@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const delay = require('delay');
 const user = {username: 'sie_terry', password: 'encore'};
 const devices = require('puppeteer/DeviceDescriptors');
-const mobile = devices['iPhone 8'];
+const mobile = devices['iPhone XR'];
 const path = require('path');
 
 async function post (description, imgPath, cb) {
