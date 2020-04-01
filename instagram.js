@@ -34,9 +34,10 @@ async function login (browser, username, password) {
 
   if (page.url().includes('/accounts/onetap')) {
     console.log('[INSTAGRAM] saving cookies for future logins')
-    
+    await page.waitForSelector('button[type="button"]')
+    console.log('[INSTAGRAM] clicked save on cookies')
     await page.click('button[type="button"]')
-    await page.waitForNavigation(/*{waitUntil: 'networkidle2'}*/)
+    await page.waitForNavigation({waitUntil: 'networkidle2'})
   }
   return page;
 }
