@@ -83,7 +83,7 @@ async function destroy (browser, username, password, pageId, postId, cb) {
 		]);
 
 	} catch (error) {
-		await browser.close();
+		await page.close();
 		return cb(error.message);
 	}
 
@@ -94,17 +94,17 @@ async function destroy (browser, username, password, pageId, postId, cb) {
 		  throw new Error("selected page does not exist")
 		}
 	} catch (error) {
-		await browser.close()
+		await page.close()
 		return cb(null);
 	}
 
 	try {
 		await page.click('button[type="submit"]')
 		await page.waitForNavigation({waitUntil: 'networkidle0'})
-		await browser.close();
+		await page.close();
 		cb(null);
 	} catch (error) {
-		await browser.close();
+		await page.close();
 		cb(error)
 	}
 }
