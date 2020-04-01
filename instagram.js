@@ -7,7 +7,7 @@ const puppeteerOpts = {headless: true, args: ['single-process','--no-sandbox', '
 async function login (browser, username, password) {
   const page = await browser.newPage();
   await page.emulate(mobile);
-  await page.goto('https://www.instagram.com');
+  await page.goto('https://www.instagram.com', {waitUntil: 'networkidle0'});
   const loginRequired = await page.$('html[class*=" not-logged-in"]')
   if (loginRequired) {
     console.log('[INSTAGRAM] login is required!')
@@ -29,6 +29,7 @@ async function login (browser, username, password) {
     console.log('[INSTAGRAM] passed login')
   } else {
     console.log('[INSTAGRAM] login NOT required')
+    return page;
   }
 
   if (page.url().includes('/accounts/onetap')) {

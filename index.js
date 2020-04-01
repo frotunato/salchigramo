@@ -36,7 +36,7 @@ const puppeteer = require('puppeteer');
 const delay = require('delay');
 const devices = require('puppeteer/DeviceDescriptors');
 const mobile = devices['iPhone XR'];
-const puppeteerOpts = {headless: true, userDataDir: "./user_data", args: ['--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
+const puppeteerOpts = {headless: true, userDataDir: "./user_data", args: ['--single-process', '--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
 
 
 (async function () {
