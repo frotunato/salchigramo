@@ -4,8 +4,8 @@ const devices = require('puppeteer/DeviceDescriptors');
 const mobile = devices['iPhone XR'];
 const puppeteerOpts = {headless: true, args: ['single-process','--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
 
-async function post (username, password, description, imgPath, cb) {
-  const browser = await puppeteer.launch(puppeteerOpts);
+async function post (browser, username, password, description, imgPath, cb) {
+  //const browser = await puppeteer.launch(puppeteerOpts);
   const page = await browser.newPage();
   await page.emulate(mobile);
   try {
@@ -85,18 +85,18 @@ async function post (username, password, description, imgPath, cb) {
       const postId = postUrl.split("/p/")[1].replace('/', '')
       console.log('posted image', postUrl, postId);
 
-      await browser.close();
+      await page.close();
       console.log('boom');
       cb(null, postUrl, postId);
     } catch (error) {
       console.log('exploded', error)
-      await browser.close();
+      await page.close();
       cb(error, null, null);
     }
 };
 
-async function destroy (username, password, postUrl, cb) {
-  const browser = await puppeteer.launch(puppeteerOpts);
+async function destroy (browser, username, password, postUrl, cb) {
+  //const browser = await puppeteer.launch(puppeteerOpts);
   const page = await browser.newPage();
   console.log('deleting post at', postUrl)
   await page.emulate(mobile);
@@ -127,7 +127,7 @@ async function destroy (username, password, postUrl, cb) {
       console.log('passed keylogin')
       */
   } catch (error) {
-      await browser.close();
+      await page.close();
       return cb (error)
   }
 
@@ -141,7 +141,7 @@ async function destroy (username, password, postUrl, cb) {
     }
   } catch (error) {
     console.log('catch: the page does not exist!');
-    await browser.close();
+    await page.close();
     return cb(null)
   }
 
@@ -171,12 +171,12 @@ async function destroy (username, password, postUrl, cb) {
     console.log('clicked on delete confirmation')
 
 
-    await browser.close();
+    await page.close();
     return cb(null);
 
     } catch (error) {
       console.log('exploded', error)
-      await browser.close();
+      await page.close();
       cb(error);
     }
 }

@@ -2,10 +2,10 @@ const puppeteer = require('puppeteer');
 const delay = require('delay');
 const devices = require('puppeteer/DeviceDescriptors');
 const mobile = devices['iPhone XR'];
-const puppeteerOpts = {headless: true, args: ['single-process','--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
+//const puppeteerOpts = {headless: true, args: ['single-process','--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
 
-async function post (username, password, pageId, description, imgPath, cb) {
-	const browser = await puppeteer.launch(puppeteerOpts);
+async function post (browser, username, password, pageId, description, imgPath, cb) {
+	//const browser = await puppeteer.launch(puppeteerOpts);
 	const page = await browser.newPage();
 	await page.emulate(mobile);
 	try {
@@ -58,16 +58,16 @@ async function post (username, password, pageId, description, imgPath, cb) {
 		postUrl = postUrl.substr(0, postUrl.indexOf("/?type"))
 		postUrl = postUrl.replace("m.facebook.com", "facebook.com")
 		var postId = postUrl.substr(postUrl.lastIndexOf("/") + 1)
-		await browser.close();
+		await page.close();
 		cb(null, postUrl, postId);
 	} catch (error) {
-		await browser.close();
+		await page.close();
 		cb(error, null)
 	}
 }
 
-async function destroy (username, password, pageId, postId, cb) {
-	const browser = await puppeteer.launch(puppeteerOpts);
+async function destroy (browser, username, password, pageId, postId, cb) {
+	//const browser = await puppeteer.launch(puppeteerOpts);
 	const page = await browser.newPage();
 	await page.emulate(mobile);
 	try {
