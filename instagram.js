@@ -11,7 +11,7 @@ async function login (browser, username, password) {
   const loginRequired = await page.$('html[class*=" not-logged-in"]')
   if (loginRequired) {
     console.log('[INSTAGRAM] login is required!')
-    await page.goto('https://www.instagram.com/accounts/login/');
+    await page.goto('https://www.instagram.com/accounts/login/', {waitUntil: 'networkidle0'});
     await page.waitForSelector('input[name="username"]', {visible: true })
     
     await page.click('input[name="username"]');
@@ -26,18 +26,16 @@ async function login (browser, username, password) {
 
     
     //await page.goto('https://www.instagram.com');
-    console.log('passed login')
+    console.log('[INSTAGRAM] passed login')
   } else {
     console.log('[INSTAGRAM] login NOT required')
   }
-  
 
   if (page.url().includes('/accounts/onetap')) {
     console.log('[INSTAGRAM] saving cookies for future logins')
-    await Promise.all([
-      page.click('button[type="button"]'),
-      page.waitForNavigation(/*{waitUntil: 'networkidle2'}*/),
-    ]); 
+    
+    await page.click('button[type="button"]')
+    await page.waitForNavigation(/*{waitUntil: 'networkidle2'}*/)
   }
   return page;
 }
@@ -48,21 +46,6 @@ async function post (browser, username, password, description, imgPath, cb) {
   //await page.emulate(mobile);
   try {
     var page = await login(browser, username, password); 
-
-      ////await page.screenshot({path: 'after login.png'});
-      //await page.goto('https://www.instagram.com', {waitUntil: 'networkidle0'});
-      //await page.waitForNavigation({ waitUntil: 'networkidle0' });
-
-      /*
-      const keyHole = await page.$(".coreSpriteKeyhole")
-      if (keyHole) {
-        await Promise.all([
-          page.click('main > div > div > div > button', {delay: 50}),
-          page.waitForNavigation(),
-        ]);
-      }      
-      */
-      //await delay(150)
     await page.waitForSelector('div[data-testid="new-post-button"]', {visible: true}); // INSTAGRAM PLUS BUTTON
 
     const [fileChooser] = await Promise.all([
