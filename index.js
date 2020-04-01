@@ -13,11 +13,30 @@ const q = new RequestQ();
 app.use(morgan('combined'));
 
 
+var deleteFolderRecursive = function(path) {
+  if( fs.existsSync(path) ) {
+    fs.readdirSync(path).forEach(function(file,index){
+      var curPath = path + "/" + file;
+      if(fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(path);
+  }
+};
+
+deleteFolderRecursive('./tmp');
+fs.mkdirSync('./tmp');
+//deleteFolderRecursive('./user_data');
+
+
 const puppeteer = require('puppeteer');
 const delay = require('delay');
 const devices = require('puppeteer/DeviceDescriptors');
 const mobile = devices['iPhone XR'];
-const puppeteerOpts = {headless: true, args: ['--single-process', '--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
+const puppeteerOpts = {headless: true, userDataDir: "./user_data", args: ['--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
 
 
 (async function () {
@@ -87,7 +106,7 @@ const puppeteerOpts = {headless: true, args: ['--single-process', '--no-sandbox'
 	}));
 
 	app.delete('/facebook', urlencodedParser, q.run(async (req, res) => {
-		console.log(req.body)
+		console.log(req.headers, req.body)
 		if (!req.body.pageId || !req.body.postId || !req.headers.username || !req.headers.password)
 			return res.status(400).json({status: 'error', message: 'invalid request, its missing essential fields'});
 		Facebook.destroy(browser, req.headers.username, req.headers.password, req.body.pageId, req.body.postId, function (err) {

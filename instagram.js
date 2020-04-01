@@ -4,27 +4,53 @@ const devices = require('puppeteer/DeviceDescriptors');
 const mobile = devices['iPhone XR'];
 const puppeteerOpts = {headless: true, args: ['single-process','--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
 
-async function post (browser, username, password, description, imgPath, cb) {
-  //const browser = await puppeteer.launch(puppeteerOpts);
+async function login (browser, username, password) {
   const page = await browser.newPage();
   await page.emulate(mobile);
-  try {
-      await page.goto('https://www.instagram.com/accounts/login/', {waitUntil: 'networkidle0'});
-      await page.waitForSelector('input[name="username"]', {visible: true })
+  await page.goto('https://www.instagram.com');
+  const loginRequired = await page.$('html[class*=" not-logged-in"]')
+  if (loginRequired) {
+    console.log('[INSTAGRAM] login is required!')
+    await page.goto('https://www.instagram.com/accounts/login/');
+    await page.waitForSelector('input[name="username"]', {visible: true })
+    
+    await page.click('input[name="username"]');
+    await page.type('input[name="username"]', username, { delay: 25 });
   
-      await page.click('input[name="username"]');
-      await page.type('input[name="username"]', username, { delay: 25 });
+    await page.waitForSelector('input[name="username"][value="' + username + '"]')
+    await page.click('input[name="password"]');
+    await page.type('input[name="password"]', password, { delay: 25 });
+  
+    await page.click('button[type="submit"]')
+    await page.waitForNavigation()
 
-      await page.waitForSelector('input[name="username"][value="' + username + '"]')
-      await page.click('input[name="password"]');
-      await page.type('input[name="password"]', password, { delay: 25 });
+    
+    //await page.goto('https://www.instagram.com');
+    console.log('passed login')
+  } else {
+    console.log('[INSTAGRAM] login NOT required')
+  }
+  
 
-      await page.click('button[type="submit"]')
-      await page.waitForNavigation({ waitUntil: 'networkidle0' })
+  if (page.url().includes('/accounts/onetap')) {
+    console.log('[INSTAGRAM] saving cookies for future logins')
+    await Promise.all([
+      page.click('button[type="button"]'),
+      page.waitForNavigation(/*{waitUntil: 'networkidle2'}*/),
+    ]); 
+  }
+  return page;
+}
 
-      console.log('passed login')
+async function post (browser, username, password, description, imgPath, cb) {
+  //const browser = await puppeteer.launch(puppeteerOpts);
+  //const page = await browser.newPage();
+  //await page.emulate(mobile);
+  try {
+    var page = await login(browser, username, password); 
+
       ////await page.screenshot({path: 'after login.png'});
-      await page.goto('https://www.instagram.com');
+      //await page.goto('https://www.instagram.com', {waitUntil: 'networkidle0'});
       //await page.waitForNavigation({ waitUntil: 'networkidle0' });
 
       /*
@@ -36,15 +62,13 @@ async function post (browser, username, password, description, imgPath, cb) {
         ]);
       }      
       */
-
-      await page.screenshot({path: 'after popup.png'});
       //await delay(150)
-      await page.waitForSelector('div[data-testid="new-post-button"]', {visible: true}); // INSTAGRAM PLUS BUTTON
+    await page.waitForSelector('div[data-testid="new-post-button"]', {visible: true}); // INSTAGRAM PLUS BUTTON
 
-      const [fileChooser] = await Promise.all([
-          page.waitForFileChooser(),
-          page.click('div[data-testid="new-post-button"]'), // INSTAGRAM PLUS BUTTON
-      ]);
+    const [fileChooser] = await Promise.all([
+        page.waitForFileChooser(),
+        page.click('div[data-testid="new-post-button"]'), // INSTAGRAM PLUS BUTTON
+    ]);
       //await delay(150)
 
       await Promise.all([
@@ -97,10 +121,11 @@ async function post (browser, username, password, description, imgPath, cb) {
 
 async function destroy (browser, username, password, postUrl, cb) {
   //const browser = await puppeteer.launch(puppeteerOpts);
-  const page = await browser.newPage();
   console.log('deleting post at', postUrl)
-  await page.emulate(mobile);
   try {
+    var page = await login(browser, username, password); 
+
+     /*
      await page.goto('https://www.instagram.com/accounts/login/', {waitUntil: 'networkidle0'});
      await page.waitForSelector('input[name="username"]', {visible: true })
      
@@ -113,8 +138,8 @@ async function destroy (browser, username, password, postUrl, cb) {
 
      await page.click('button[type="submit"]')
      await page.waitForNavigation({ waitUntil: 'networkidle0' })
-    
-    console.log('passed login')
+      */
+    //console.log('passed login')
 
       /*
       const keyHole = await page.$(".coreSpriteKeyhole")

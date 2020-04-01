@@ -4,39 +4,55 @@ const devices = require('puppeteer/DeviceDescriptors');
 const mobile = devices['iPhone XR'];
 //const puppeteerOpts = {headless: true, args: ['single-process','--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
 
-async function post (browser, username, password, pageId, description, imgPath, cb) {
-	//const browser = await puppeteer.launch(puppeteerOpts);
+async function login (browser, username, password, pageId) {
 	const page = await browser.newPage();
 	await page.emulate(mobile);
-	try {
-		await page.goto('https://mobile.facebook.com/', {waitUntil: 'networkidle0'});
-		
-		await page.waitForSelector('#m_login_email', {visible: true})
-		await page.type('#m_login_email', username, {delay: 30})
-		await page.type('#m_login_password', password, {delay: 20})
+	await page.goto("https://m.facebook.com/login.php?next=https://m.facebook.com/" + pageId)
+	const loginRequired = await page.$('#m_login_email');
+	if (loginRequired) {
+		console.log('[FACEBOOK] login is required!')
+		//await page.waitForSelector('#m_login_email', {visible: true})
+		await page.type('#m_login_email', username)
+		await page.type('#m_login_password', password)
 
 		await Promise.all([
-		  page.click('button[name="login"]', {delay: 20}),
-		  page.waitForNavigation({waitUntil: 'networkidle0'}),
+		  page.click('button[name="login"]'),
+		  page.waitForNavigation(/*{waitUntil: 'networkidle2'}*/),
 		]);
 
-		await page.goto("https://mobile.facebook.com/" + pageId)
+		if (page.url().includes('save-device')) {
+			console.log('[FACEBOOK] saving cookies for future logins')
+			await Promise.all([
+			  page.click('button[type="submit"]'),
+			  page.waitForNavigation(/*{waitUntil: 'networkidle2'}*/),
+			]);
+		}
+	} else {
+		console.log('[FACEBOOK] login NOT required')
+	}
+	return page;
+}
 
+async function post (browser, username, password, pageId, description, imgPath, cb) {
+	//const browser = await puppeteer.launch(puppeteerOpts);
+	var datea = Date.now();
+	const page = await login(browser, username, password, pageId);
+	
+	try {
 		await Promise.all([
-			page.waitForNavigation({waitUntil: 'networkidle0'}),
-			page.click('a[aria-label="Publicar"]', {delay: 40}),
+			page.waitForNavigation(),
+			page.click('a[aria-label="Publicar"]'),
 		])
 		await page.waitFor('button[title="Añade una foto"]');
-		
 		//$("#pages_msite_body_contents > div > div:nth-child(3) > div > div > article")
 		const [fileChooser] = await Promise.all([
 		    page.waitForFileChooser(),
-		    page.click('button[title="Añade una foto"]', {delay: 50}),
+		    page.click('button[title="Añade una foto"]'),
 		]);
 
 		console.log('starting upload');
 		await Promise.all([
-			page.waitFor('div[data-sigil="marea"] > form > div:nth-child(4) > div > div > div > img[alt]', { visible: true, waitUntil: 'networkidle0' }),
+			page.waitFor('div[data-sigil="marea"] > form > div:nth-child(4) > div > div > div > img[alt]', { visible: true, waitUntil: 'networkidle2' }),
 			fileChooser.accept([imgPath]),
 		]);
 		console.log('finished upload, waiting for the publish button to be enabled');
@@ -44,14 +60,14 @@ async function post (browser, username, password, pageId, description, imgPath, 
 		await page.waitFor('div[data-sigil="composer-header"] > div > div:last-child > div > button:not([disabled])');
 
 		console.log('the button should be clickable?');
-		await page.type('textarea[aria-label="Escribe algo..."]', description, {delay: 25})
+		await page.type('textarea[aria-label="Escribe algo..."]', description)
 
 		await Promise.all([
-			page.waitForNavigation({waitUntil: 'networkidle0'}),
-			page.click('div[data-sigil="composer-header"] > div > div:last-child > div > button', {delay: 40}),
+			page.waitForNavigation(),
+			page.click('div[data-sigil="composer-header"] > div > div:last-child > div > button'),
 		])
 
-		await page.goto("https://m.facebook.com/" +  pageId + "/posts/", {waitUntil: 'networkidle0'});
+		await page.goto("https://m.facebook.com/" +  pageId + "/posts/");
 
 		const elementHandle = await page.$('.story_body_container > header > div:nth-child(2) > div > div > div > div:nth-child(2) > a');
 		var postUrl = await page.evaluate(el => el.href, elementHandle);
@@ -59,6 +75,7 @@ async function post (browser, username, password, pageId, description, imgPath, 
 		postUrl = postUrl.replace("m.facebook.com", "facebook.com")
 		var postId = postUrl.substr(postUrl.lastIndexOf("/") + 1)
 		await page.close();
+		console.log(Date.now() - datea, 'time to post to facebook')
 		cb(null, postUrl, postId);
 	} catch (error) {
 		await page.close();
@@ -68,27 +85,17 @@ async function post (browser, username, password, pageId, description, imgPath, 
 
 async function destroy (browser, username, password, pageId, postId, cb) {
 	//const browser = await puppeteer.launch(puppeteerOpts);
-	const page = await browser.newPage();
-	await page.emulate(mobile);
+	var page;
 	try {
-		await page.goto('https://mobile.facebook.com/', {waitUntil: 'networkidle0'});
-		
-		await page.waitForSelector('#m_login_email', {visible: true})
-		await page.type('#m_login_email', username, {delay: 30})
-		await page.type('#m_login_password', password, {delay: 20})
-
-		await Promise.all([
-		  page.click('button[name="login"]', {delay: 20}),
-		  page.waitForNavigation({waitUntil: 'networkidle0'}),
-		]);
-
+		page = await login(browser, username, password, pageId);
 	} catch (error) {
 		await page.close();
-		return cb(error.message);
+		return cb(error);
 	}
-
 	try {
 		await page.goto("https://mobile.facebook.com/photo.php?fbid=" + postId + "&id=" + pageId + "&delete", {waitUntil: 'networkidle0'})
+		console.log('[FB-DESTROY] navigated to post page')
+
 		const deletedPost = await page.$('div[class="message"][data-sigil="error-message"]')
 		if (deletedPost) {
 		  throw new Error("selected page does not exist")
@@ -99,9 +106,11 @@ async function destroy (browser, username, password, pageId, postId, cb) {
 	}
 
 	try {
+		console.log('[FB-DESTROY] submitting deletion')
 		await page.click('button[type="submit"]')
-		await page.waitForNavigation({waitUntil: 'networkidle0'})
+		await page.waitForNavigation({waitUntil: 'networkidle2'})
 		await page.close();
+		console.log('[FB-DESTROY] deleted properly')
 		cb(null);
 	} catch (error) {
 		await page.close();
