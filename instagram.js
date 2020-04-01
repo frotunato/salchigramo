@@ -1,12 +1,11 @@
 const puppeteer = require('puppeteer');
 const delay = require('delay');
-const user = {username: 'sie_terry2020', password: 'mayonesa'};
 const devices = require('puppeteer/DeviceDescriptors');
 const mobile = devices['iPhone XR'];
 const path = require('path');
 const puppeteerOpts = {headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
 
-async function post (description, imgPath, cb) {
+async function post (username, password, description, imgPath, cb) {
   const browser = await puppeteer.launch(puppeteerOpts);
   const page = await browser.newPage();
   await page.emulate(mobile);
@@ -15,11 +14,11 @@ async function post (description, imgPath, cb) {
       await page.waitForSelector('input[name="username"]', {visible: true })
   
       await page.click('input[name="username"]');
-      await page.type('input[name="username"]', user.username, { delay: 25 });
+      await page.type('input[name="username"]', username, { delay: 25 });
 
-      await page.waitForSelector('input[name="username"][value="' + user.username + '"]')
+      await page.waitForSelector('input[name="username"][value="' + username + '"]')
       await page.click('input[name="password"]');
-      await page.type('input[name="password"]', user.password, { delay: 25 });
+      await page.type('input[name="password"]', password, { delay: 25 });
 
       await page.click('button[type="submit"]')
       await page.waitForNavigation({ waitUntil: 'networkidle0' })
@@ -97,7 +96,7 @@ async function post (description, imgPath, cb) {
     }
 };
 
-async function destroy (postUrl, cb) {
+async function destroy (username, password, postUrl, cb) {
   const browser = await puppeteer.launch(puppeteerOpts);
   const page = await browser.newPage();
   console.log('deleting post at', postUrl)
@@ -109,9 +108,9 @@ async function destroy (postUrl, cb) {
      await page.click('input[name="username"]');
      await page.type('input[name="username"]', user.username, { delay: 25 });
 
-     await page.waitForSelector('input[name="username"][value="' + user.username + '"]')
+     await page.waitForSelector('input[name="username"][value="' + username + '"]')
      await page.click('input[name="password"]');
-     await page.type('input[name="password"]', user.password, { delay: 25 });
+     await page.type('input[name="password"]', password, { delay: 25 });
 
      await page.click('button[type="submit"]')
      await page.waitForNavigation({ waitUntil: 'networkidle0' })

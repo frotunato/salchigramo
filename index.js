@@ -9,22 +9,23 @@ const Instagram = require('./instagram.js');
 const RequestQ = require('express-request-queue');
 const q = new RequestQ();
 
-
 app.use(morgan('combined'));
 
 app.get('/', q.run(async (req, res) => {
+	console.log(req.headers)
 	setTimeout(function () {
 		console.log('query!!')
 		res.json({msg: "hola mundo"})
 	}, 1000)
 }));
 
-app.post('/', urlencodedParser, q.run(async (req, res) => {
+app.post('/instagram', urlencodedParser, q.run(async (req, res) => {
 	let tmpImgPath = "./tmp/" + Date.now() + "_image.png";
+	if (!req.body.image || !req.body.description || !req.headers.username || !req.headers.password)
+		return res.status(400).json({status: 'error', message: 'invalid request, its missing essential fields'});
 	fs.writeFile(tmpImgPath, req.body.image, 'base64', function(err) {
-		var bf = new Buffer(req.body.image, 'base64');
-		Instagram.post(req.body.description, tmpImgPath, function (postUrl, postId, err) {
-		//Instagram.post(req.body.description, bf, function (postUrl, postId, err) {
+		console.log(req.headers)
+		Instagram.post(req.headers.username, req.headers.password, req.body.description, tmpImgPath, function (postUrl, postId, err) {
 			if (err) {
 				fs.unlink(tmpImgPath, function () {
 					res.status(400).json({status: 'error', message: err.message});
@@ -38,8 +39,10 @@ app.post('/', urlencodedParser, q.run(async (req, res) => {
 	});
 }));
 
-app.delete('/', urlencodedParser, q.run(async (req, res) => {
-	Instagram.destroy(req.body.url, function (err) {
+app.delete('/instagram', urlencodedParser, q.run(async (req, res) => {
+	if (!req.body.image || !req.body.description || !req.headers.username || !req.headers.password)
+		return res.status(400).json({status: 'error', message: 'invalid request, its missing essential fields'});
+	Instagram.destroy(req.headers.username, req.headers.password, req.body.url, function (err) {
 		if (err)
 			res.status(400).json({status: 'error', message: err.message});
 		else
