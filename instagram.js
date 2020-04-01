@@ -2,8 +2,7 @@ const puppeteer = require('puppeteer');
 const delay = require('delay');
 const devices = require('puppeteer/DeviceDescriptors');
 const mobile = devices['iPhone XR'];
-const path = require('path');
-const puppeteerOpts = {headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
+const puppeteerOpts = {headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
 
 async function post (username, password, description, imgPath, cb) {
   const browser = await puppeteer.launch(puppeteerOpts);
@@ -88,11 +87,11 @@ async function post (username, password, description, imgPath, cb) {
 
       await browser.close();
       console.log('boom');
-      cb(postUrl, postId, null);
+      cb(null, postUrl, postId);
     } catch (error) {
       console.log('exploded', error)
       await browser.close();
-      cb(null, null, error);
+      cb(error, null, null);
     }
 };
 
@@ -106,7 +105,7 @@ async function destroy (username, password, postUrl, cb) {
      await page.waitForSelector('input[name="username"]', {visible: true })
      
      await page.click('input[name="username"]');
-     await page.type('input[name="username"]', user.username, { delay: 25 });
+     await page.type('input[name="username"]', username, { delay: 25 });
 
      await page.waitForSelector('input[name="username"][value="' + username + '"]')
      await page.click('input[name="password"]');
