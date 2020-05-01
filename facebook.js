@@ -117,7 +117,6 @@ async function destroy (browser, username, password, pageId, postId, cb) {
 		cb(error)
 	}
 }
-	//await page.waitFor(100);
 
 module.exports.post = post;
 module.exports.destroy = destroy;

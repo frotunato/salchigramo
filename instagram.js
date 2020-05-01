@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const delay = require('delay');
 const devices = require('puppeteer/DeviceDescriptors');
 const mobile = devices['iPhone XR'];
-const puppeteerOpts = {headless: true, args: ['single-process','--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
+//const puppeteerOpts = {headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
 
 async function login (browser, username, password) {
   const page = await browser.newPage();
@@ -110,32 +110,6 @@ async function destroy (browser, username, password, postUrl, cb) {
   try {
     var page = await login(browser, username, password); 
 
-     /*
-     await page.goto('https://www.instagram.com/accounts/login/', {waitUntil: 'networkidle0'});
-     await page.waitForSelector('input[name="username"]', {visible: true })
-     
-     await page.click('input[name="username"]');
-     await page.type('input[name="username"]', username, { delay: 25 });
-
-     await page.waitForSelector('input[name="username"][value="' + username + '"]')
-     await page.click('input[name="password"]');
-     await page.type('input[name="password"]', password, { delay: 25 });
-
-     await page.click('button[type="submit"]')
-     await page.waitForNavigation({ waitUntil: 'networkidle0' })
-      */
-    //console.log('passed login')
-
-      /*
-      const keyHole = await page.$(".coreSpriteKeyhole")
-      if (keyHole) {
-        await Promise.all([
-          page.waitForNavigation({ waitUntil: 'networkidle0' }),
-          page.click('main > div > div > div > button', {delay: 50}),
-        ]);
-      }
-      console.log('passed keylogin')
-      */
   } catch (error) {
       await page.close();
       return cb (error)
