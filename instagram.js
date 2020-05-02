@@ -10,7 +10,7 @@ async function login (browser, username, password) {
   await page.goto('https://www.instagram.com', {waitUntil: 'networkidle0'});
   const loginRequired = await page.$('html[class*=" not-logged-in"]')
   if (loginRequired) {
-    console.log('[INSTAGRAM] login is required!')
+    console.log('[INSTAGRAM-LOGIN] no cookies saved, login is required!')
     await page.goto('https://www.instagram.com/accounts/login/', {waitUntil: 'networkidle0'});
     await page.waitForSelector('input[name="username"]', {visible: true })
     
@@ -26,16 +26,16 @@ async function login (browser, username, password) {
 
     
     //await page.goto('https://www.instagram.com');
-    console.log('[INSTAGRAM] passed login')
+    console.log('[INSTAGRAM-LOGIN] passed login')
   } else {
-    console.log('[INSTAGRAM] login NOT required')
+    console.log('[INSTAGRAM-LOGIN] login NOT required')
     return page;
   }
 
   if (page.url().includes('/accounts/onetap')) {
-    console.log('[INSTAGRAM] saving cookies for future logins')
+    console.log('[INSTAGRAM-LOGIN] saving cookies for future logins')
     await page.waitForSelector('button[type="button"]')
-    console.log('[INSTAGRAM] clicked save on cookies')
+    console.log('[INSTAGRAM-LOGIN] clicked save cookies button')
     await page.click('button[type="button"]')
     await page.waitForNavigation({waitUntil: 'networkidle2'})
   }
@@ -61,13 +61,12 @@ async function post (browser, username, password, description, imgPath, cb) {
         fileChooser.accept([imgPath]),
       ])
 
-      console.log('sended picture');
       
       await page.waitForSelector('header > div > div:last-child > button', { visible: true })
       await page.click("header > div > div:last-child > button")
       await page.waitForNavigation({ waitUntil: 'networkidle0' })
 
-      console.log('sended picture');
+      console.log('[INSTAGRAM-POST] uploaded picture');
       ////await page.screenshot({path: 'sended picture.png'});
       //await delay(150)
 
@@ -77,28 +76,28 @@ async function post (browser, username, password, description, imgPath, cb) {
       await page.waitForSelector('header > div > div:last-child > button', { visible: true });
       //await page.waitForSelector(50);
 
-      console.log('filled data');
+      console.log('[INSTAGRAM-POST] filled description text');
       //await delay(150)
 
       await page.click("header > div > div:last-child > button"),
       await page.waitForNavigation({ waitUntil: 'networkidle0' }),
       //await delay(150)
 
-      console.log('waiting for main')
+      console.log('[INSTAGRAM-POST] waiting for main screen')
 
       await page.waitForSelector('main[role="main"]', {visible: true})
-      console.log('main appeared')
+      console.log('[INSTAGRAM-POST] main screen loaded')
       
       const elementHandle = await page.$("article:nth-child(1) > div:nth-child(3) > div > a");
       const postUrl = await page.evaluate(el => el.href, elementHandle);
       const postId = postUrl.split("/p/")[1].replace('/', '')
-      console.log('posted image', postUrl, postId);
+      console.log('[INSTAGRAM-POST] posted to', postUrl, postId);
 
       await page.close();
-      console.log('boom');
+      console.log('[INSTAGRAM-POST] closing tab');
       cb(null, postUrl, postId);
     } catch (error) {
-      console.log('exploded', error)
+      console.log('[INSTAGRAM-POST] an error ocurred!', error)
       await page.close();
       cb(error, null, null);
     }
@@ -106,7 +105,7 @@ async function post (browser, username, password, description, imgPath, cb) {
 
 async function destroy (browser, username, password, postUrl, cb) {
   //const browser = await puppeteer.launch(puppeteerOpts);
-  console.log('deleting post at', postUrl)
+  console.log('[INSTAGRAM-DESTROY] deleting post at URL', postUrl)
   try {
     var page = await login(browser, username, password); 
 
@@ -116,7 +115,7 @@ async function destroy (browser, username, password, postUrl, cb) {
   }
 
   try {
-    console.log('navigating to post url:', postUrl)
+    console.log('[INSTAGRAM-DESTROY] starting navigation to post URL:', postUrl)
     await page.goto(postUrl, {waitUntil: 'networkidle0'});
     const deletedPost = await page.$(".error-container")
 
@@ -131,14 +130,14 @@ async function destroy (browser, username, password, postUrl, cb) {
 
   try {
     await page.waitForSelector('article > div:last-child > button', { visible: true });
-    console.log('navigated to post url')
+    console.log('[INSTAGRAM-DESTROY] navigated to post URL')
     //await delay(100)
-    console.log('trying to click three dots')
+    console.log('[INSTAGRAM-DESTROY] clicking on menu button (three dots)')
       
     await page.click("article > div:last-child > button")
     await page.waitForSelector('div[role="dialog"] > div > div > button', { visible: true })
 
-    console.log('clicked on three dots')
+    console.log('[INSTAGRAM-DESTROY] action menu opened')
     //await delay(100)
     
     await page.click('div[role="dialog"] > div > div > button')
@@ -146,20 +145,20 @@ async function destroy (browser, username, password, postUrl, cb) {
     await page.waitForSelector('div[role="dialog"] > div > div:last-child > button', { visible: true })
     
 
-    console.log('clicked on delete')
+    console.log('[INSTAGRAM-DESTROY] selected delete action')
     //await delay(100)
 
     await page.click('div[role="dialog"] > div > div:last-child > button')
     await page.waitForNavigation({ waitUntil: 'networkidle0' })
 
-    console.log('clicked on delete confirmation')
+    console.log('[INSTAGRAM-DESTROY] clicked on delete confirmation')
 
 
     await page.close();
     return cb(null);
 
     } catch (error) {
-      console.log('exploded', error)
+      console.log('[INSTAGRAM-DESTROY] an error ocurred!', error)
       await page.close();
       cb(error);
     }

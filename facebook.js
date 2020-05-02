@@ -10,7 +10,7 @@ async function login (browser, username, password, pageId) {
 	await page.goto("https://m.facebook.com/login.php?next=https://m.facebook.com/" + pageId)
 	const loginRequired = await page.$('#m_login_email');
 	if (loginRequired) {
-		console.log('[FACEBOOK] login is required!')
+		console.log('[FACEBOOK-LOGIN] login is required!, no cookies found')
 		//await page.waitForSelector('#m_login_email', {visible: true})
 		await page.type('#m_login_email', username)
 		await page.type('#m_login_password', password)
@@ -21,14 +21,14 @@ async function login (browser, username, password, pageId) {
 		]);
 
 		if (page.url().includes('save-device')) {
-			console.log('[FACEBOOK] saving cookies for future logins')
+			console.log('[FACEBOOK-LOGIN] saving cookies for future logins')
 			await Promise.all([
 			  page.click('button[type="submit"]'),
 			  page.waitForNavigation(/*{waitUntil: 'networkidle2'}*/),
 			]);
 		}
 	} else {
-		console.log('[FACEBOOK] login NOT required')
+		console.log('[FACEBOOK-LOGIN] login NOT required')
 	}
 	return page;
 }
@@ -50,16 +50,16 @@ async function post (browser, username, password, pageId, description, imgPath, 
 		    page.click('button[title="Añade una foto"]'),
 		]);
 
-		console.log('starting upload');
+		console.log('[FACEBOOK-POST] starting upload');
 		await Promise.all([
 			page.waitFor('div[data-sigil="marea"] > form > div:nth-child(4) > div > div > div > img[alt]', { visible: true, waitUntil: 'networkidle2' }),
 			fileChooser.accept([imgPath]),
 		]);
-		console.log('finished upload, waiting for the publish button to be enabled');
+		console.log('[FACEBOOK-POST] finished upload, waiting for the publish button to be enabled');
 
 		await page.waitFor('div[data-sigil="composer-header"] > div > div:last-child > div > button:not([disabled])');
 
-		console.log('the button should be clickable?');
+		console.log('[FACEBOOK-POST] the publish button should be clickable?');
 		await page.type('textarea[aria-label="Escribe algo..."]', description)
 
 		await Promise.all([
@@ -75,7 +75,8 @@ async function post (browser, username, password, pageId, description, imgPath, 
 		postUrl = postUrl.replace("m.facebook.com", "facebook.com")
 		var postId = postUrl.substr(postUrl.lastIndexOf("/") + 1)
 		await page.close();
-		console.log(Date.now() - datea, 'time to post to facebook')
+		//console.log("[FACEBOOK-POST]", Date.now() - datea, 'seconds to post to facebook')
+		console.log("[FACEBOOK-POST] posted successfully");
 		cb(null, postUrl, postId);
 	} catch (error) {
 		await page.close();
@@ -89,30 +90,34 @@ async function destroy (browser, username, password, pageId, postId, cb) {
 	try {
 		page = await login(browser, username, password, pageId);
 	} catch (error) {
+		console.log('[FACEBOOK-DESTROY] error', error)
 		await page.close();
 		return cb(error);
 	}
 	try {
-		await page.goto("https://mobile.facebook.com/photo.php?fbid=" + postId + "&id=" + pageId + "&delete", {waitUntil: 'networkidle0'})
-		console.log('[FB-DESTROY] navigated to post page')
+		await page.goto("https://mobile.facebook.com/photo.php?fbid=" + postId + "&id=" + pageId + "&delete", {waitUntil: 'networkidle2'})
+		console.log('[FACEBOOK-DESTROY] navigated to post page', "https://mobile.facebook.com/photo.php?fbid=" + postId + "&id=" + pageId + "&delete")
 
-		const deletedPost = await page.$('div[class="message"][data-sigil="error-message"]')
-		if (deletedPost) {
+		//const deletedPost = await page.$('div[class="message"][data-sigil="error-message"]')
+		const deletedPost = await page.$('button[type="submit"]')
+		if (!deletedPost) {
 		  throw new Error("selected page does not exist")
 		}
 	} catch (error) {
+		console.log('[FACEBOOK-DESTROY] error', error)
 		await page.close()
 		return cb(null);
 	}
 
 	try {
-		console.log('[FB-DESTROY] submitting deletion')
+		console.log('[FACEBOOK-DESTROY] submitting deletion')
 		await page.click('button[type="submit"]')
 		await page.waitForNavigation({waitUntil: 'networkidle2'})
 		await page.close();
-		console.log('[FB-DESTROY] deleted properly')
+		console.log('[FACEBOOK-DESTROY] post deleted successfully')
 		cb(null);
 	} catch (error) {
+		console.log('[FACEBOOK-DESTROY] error', error)
 		await page.close();
 		cb(error)
 	}

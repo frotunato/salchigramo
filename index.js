@@ -36,18 +36,13 @@ const puppeteer = require('puppeteer');
 const delay = require('delay');
 const devices = require('puppeteer/DeviceDescriptors');
 const mobile = devices['iPhone XR'];
-const puppeteerOpts = {headless: true, userDataDir: "./user_data", args: ['--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
+const puppeteerOpts = {headless: false, userDataDir: "./user_data", args: ['--no-sandbox', '--disable-setuid-sandbox',  '--disable-dev-shm-usage']};
 
 
 (async function () {
 	const browser = await puppeteer.launch(puppeteerOpts);
 
 	app.get('/', q.run(async (req, res) => {
-		//console.log(req.headers)
-		//const page = await browser.newPage()
-		//await page.goto("https://forocoches.com", {waitUntil: 'networkidle0'})
-		//await page.screenshot({path: 'culo.png'})
-		//await page.close();
 		res.json({msg: "hola mundo"})
 	}));
 
@@ -56,7 +51,7 @@ const puppeteerOpts = {headless: true, userDataDir: "./user_data", args: ['--no-
 		if (!req.body.image || !req.body.description || !req.headers.username || !req.headers.password)
 			return res.status(400).json({status: 'error', message: 'invalid request, its missing essential fields'});
 		fs.writeFile(tmpImgPath, req.body.image, 'base64', function(e) {
-			console.log(req.headers)
+			//console.log(req.headers)
 			Instagram.post(browser, req.headers.username, req.headers.password, req.body.description, tmpImgPath, function (err, postUrl, postId) {
 				if (err) {
 					fs.unlink(tmpImgPath, function () {
@@ -72,7 +67,7 @@ const puppeteerOpts = {headless: true, userDataDir: "./user_data", args: ['--no-
 	}));
 
 	app.delete('/instagram', urlencodedParser, q.run(async (req, res) => {
-		console.log(req.headers, req.body)
+		//console.log(req.headers, req.body)
 		if (!req.body.url || !req.headers.username || !req.headers.password)
 			return res.status(400).json({status: 'error', message: 'invalid request, its missing essential fields'});
 		Instagram.destroy(browser, req.headers.username, req.headers.password, req.body.url, function (err) {
@@ -89,7 +84,7 @@ const puppeteerOpts = {headless: true, userDataDir: "./user_data", args: ['--no-
 			return res.status(400).json({status: 'error', message: 'invalid request, its missing essential fields'});
 		let tmpImgPath = "./tmp/" + Date.now() + "_image.png";
 		fs.writeFile(tmpImgPath, req.body.image, 'base64', function(e) {
-			console.log(req.headers)
+			//console.log(req.headers)
 			Facebook.post(browser, req.headers.username, req.headers.password, req.body.pageId, req.body.description, tmpImgPath, function (err, postUrl, postId) {
 				if (err) {
 					fs.unlink(tmpImgPath, function () {
@@ -106,7 +101,7 @@ const puppeteerOpts = {headless: true, userDataDir: "./user_data", args: ['--no-
 	}));
 
 	app.delete('/facebook', urlencodedParser, q.run(async (req, res) => {
-		console.log(req.headers, req.body)
+		//console.log(req.headers, req.body)
 		if (!req.body.pageId || !req.body.postId || !req.headers.username || !req.headers.password)
 			return res.status(400).json({status: 'error', message: 'invalid request, its missing essential fields'});
 		Facebook.destroy(browser, req.headers.username, req.headers.password, req.body.pageId, req.body.postId, function (err) {
